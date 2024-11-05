@@ -3,21 +3,22 @@ import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    require: true,
+    required: true,
     unique: true,
   },
   name: {
     type: String,
-    require: true,
+    required: true,
   },
   password: {
     type: String,
-    require: true,
+    required: true,
   },
   avatar: {
     type: String,
     default: null,
   },
+  role: { type: String, default: "user", enum: ["user", "admin"] },
   createAt: {
     type: Date,
     default: Date.now,
@@ -25,7 +26,7 @@ const userSchema = new mongoose.Schema({
 });
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
-    const hash = await bcrypt(this.password, 10);
+    const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
   }
   next();
