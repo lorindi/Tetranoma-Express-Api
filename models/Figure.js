@@ -5,34 +5,34 @@ const figureSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      require: true,
+      required: true,
       minlength: 1,
     },
     description: {
       type: String,
-      require: true,
+      required: true,
       minlength: 5,
     },
     category: {
       type: String,
-      require: true,
+      required: true,
       enum: [
-        film,
-        game,
-        comic,
-        fantasy,
-        miniatures,
-        sci - fi,
-        historical,
-        animals,
-        architecture,
-        educational,
-        decor,
+        "film",
+        "game",
+        "comic",
+        "fantasy",
+        "miniatures",
+        "sci-fi",
+        "historical",
+        "animals",
+        "architecture",
+        "educational",
+        "decor",
       ],
     },
     images: {
-      type: [],
-      require: true,
+      type: [String],
+      required: true,
     },
     price: {
       type: Number,
@@ -42,8 +42,10 @@ const figureSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      require: true,
+      required: true,
     },
+    stock: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
