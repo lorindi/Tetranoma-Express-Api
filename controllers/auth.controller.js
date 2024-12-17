@@ -19,7 +19,7 @@ export const createAccount = async (req, res) => {
       email,
       password,
     });
-    const saveUser = await newUser.save();
+    await newUser.save();
 
     res.status(200).json({ message: "User created successfully" });
   } catch (err) {
