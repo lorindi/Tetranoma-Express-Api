@@ -62,10 +62,8 @@ export const listFigures = async (req, res) => {
 
     console.log("Applied filters:", filter);
 
-    // Извличане на общия брой резултати
     const total = await Figure.countDocuments(filter);
 
-    // Извличане на филтрираните фигури с пагинация
     const figures = await Figure.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
