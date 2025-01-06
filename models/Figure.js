@@ -46,13 +46,21 @@ const figureSchema = new mongoose.Schema(
     },
     stock: { type: Number, default: 0 },
     rating: {
-      averageRating: { type: Number, default: 0 },
+      averageRating: { 
+        type: Number, 
+        default: 0 
+      },
       userRatings: {
         type: Map,
         of: Number,
-        default: new Map(),
-      },
+        default: new Map()
+      }
     },
+    favorites: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: []
+    }
   },
   { timestamps: true }
 );
