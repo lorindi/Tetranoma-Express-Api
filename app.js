@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 
 import authRoute from "./routes/auth.route.js";
 import figureRoute from "./routes/figure.route.js";
-
+import cartRoute from "./routes/cart.route.js";
+import profileRoute from "./routes/profile.route.js";
 const app = express();
 
 mongoose
@@ -23,7 +24,9 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoute);
+app.use("/api/profile", profileRoute);
 app.use("/api/figures", figureRoute);
+app.use("/api/cart", cartRoute);
 
 app.listen(5000, () => {
   console.log("Restful server is listening on port 5000");
