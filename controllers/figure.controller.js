@@ -201,11 +201,9 @@ export const toggleFavorite = async (req, res) => {
     if (favoriteIndex === -1) {
       // Add to favorites
       figure.favorites.push(userId);
-      console.log("Added to favorites");
     } else {
       // Remove from favorites
       figure.favorites.splice(favoriteIndex, 1);
-      console.log("Removed from favorites");
     }
 
     await figure.save();
@@ -219,5 +217,64 @@ export const toggleFavorite = async (req, res) => {
   } catch (err) {
     console.log("Error in toggleFavorite:", err);
     res.status(500).json({ message: "Failed to update favorites" });
+  }
+};
+export const getFavorites = async (req, res) => {
+  const userId = req.userId;
+
+  try {
+
+    const favorites = await Figure.find({
+      favorites: userId
+    }).lean();
+
+    const favoritesWithStats = favorites.map(figure => ({
+      ...figure,
+      ratingStats: {
+        averageRating: figure.rating?.averageRating || 0,
+        totalRatings: figure.rating?.userRatings ? Object.keys(figure.rating.userRatings).length : 0
+      }
+    }));
+
+    res.status(200).json({
+      message: "Favorites retrieved successfully",
+      favorites: favoritesWithStats
+    });
+
+  } catch (err) {
+    console.log("Error in getFavorites:", err);
+    res.status(500).json({ 
+      message: "Failed to fetch favorites",
+      error: err.message 
+    });
+  }
+};
+export const getMyFigures = async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const figures = await Figure.find({ userId: userId }).lean();
+
+    const figuresWithStats = figures.map(figure => ({
+      ...figure,
+      isFavorite: figure.favorites.includes(userId),
+      stats: {
+        favoritesCount: figure.favorites.length,
+        averageRating: figure.rating?.averageRating || 0,
+        totalRatings: figure.rating?.userRatings ? Object.keys(figure.rating.userRatings).length : 0
+      }
+    }));
+
+    res.status(200).json({
+      message: "User figures retrieved successfully",
+      figures: figuresWithStats
+    });
+
+  } catch (err) {
+    console.log("Error in getMyFigures:", err);
+    res.status(500).json({ 
+      message: "Failed to fetch user figures",
+      error: err.message 
+    });
   }
 };
