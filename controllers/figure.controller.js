@@ -34,10 +34,47 @@ export const createFigure = async (req, res) => {
 };
 
 export const updateFigure = async (req, res) => {
+  const figureId = req.params.id;
+  const userId = req.userId;
+  const { title, description, category, images, price, stock } = req.body;
+
   try {
+    
+    const figure = await Figure.findById(figureId);
+    
+    if (!figure) return res.status(404).json({ message: "Figure not found" });
+    
+
+    // Check if user is the owner
+    if (figure.userId.toString() !== userId) return res.status(403).json({ message: "Not authorized to update this figure" });
+
+    const updatedFigure = await Figure.findByIdAndUpdate(
+      figureId,
+      {
+        $set: {
+          ...(title && { title }),
+          ...(description && { description }),
+          ...(category && { category }),
+          ...(images && { images }),
+          ...(price && { price }),
+          ...(typeof stock !== "undefined" && { stock })
+        }
+      },
+      { new: true }
+    );
+
+
+    res.status(200).json({
+      message: "Figure updated successfully",
+      figure: updatedFigure
+    });
+
   } catch (err) {
+    console.log("Error in updateFigure:", err);
+    res.status(500).json({ message: "Failed to update figure" });
   }
 };
+
 export const listFigures = async (req, res) => {
   try {
     
@@ -139,7 +176,35 @@ export const detailsFigure = async (req, res) => {
   }
 };
 
-export const deleteFigure = async (req, res) => {};
+export const deleteFigure = async (req, res) => {
+  const figureId = req.params.id;
+  const userId = req.userId;
+
+  try {
+    const figure = await Figure.findById(figureId);
+    
+    if (!figure) {
+      return res.status(404).json({ message: "Figure not found" });
+    }
+
+    if (figure.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this figure" });
+    }
+
+    await Figure.findByIdAndDelete(figureId);
+
+    res.status(200).json({ 
+      message: "Figure successfully deleted"
+    });
+
+  } catch (err) {
+    console.log("Error in deleteFigure:", err);
+    res.status(500).json({ 
+      message: "Failed to delete figure",
+      error: err.message 
+    });
+  }
+};
 
 export const rateFigure = async (req, res) => {
   const figureId = req.params.id;
