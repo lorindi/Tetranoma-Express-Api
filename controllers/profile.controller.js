@@ -13,7 +13,6 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Get additional user statistics
     const figuresCount = await Figure.countDocuments({ userId: req.userId });
     const ordersCount = await Order.countDocuments({ userId: req.userId });
 
@@ -37,19 +36,19 @@ export const getProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+  
   try {
-    const { name, email, avatar } = req.body;
+    const { name, email, avatar, role } = req.body;
+    const userIdToUpdate = req.isAdminRequest ? req.params.userId : req.userId;
     
-    if (!name && !email && !avatar) {
-      console.log("No data to update");
+    if (!name && !email && !avatar && !role) {
       return res.status(400).json({ message: "No data provided for update" });
     }
 
-    // Check if email already exists
     if (email) {
       const existingUser = await User.findOne({ 
         email, 
-        _id: { $ne: req.userId } 
+        _id: { $ne: userIdToUpdate } 
       });
       
       if (existingUser) {
@@ -57,15 +56,20 @@ export const updateProfile = async (req, res) => {
       }
     }
 
+    const updateData = {
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(avatar && { avatar }),
+      ...(req.isAdminRequest && role && { role })
+    };
+
+    if (role === "admin" && !req.isAdminRequest) {
+      return res.status(403).json({ message: "Unauthorized role change" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
-      req.userId,
-      {
-        $set: {
-          ...(name && { name }),
-          ...(email && { email }),
-          ...(avatar && { avatar })
-        }
-      },
+      userIdToUpdate,
+      { $set: updateData },
       { new: true }
     ).select("-password");
 
@@ -86,24 +90,32 @@ export const updateProfile = async (req, res) => {
 
 export const deleteProfile = async (req, res) => {
   try {
-
-    // Delete user
-    const deletedUser = await User.findByIdAndDelete(req.userId);
+    
+    const userIdToDelete = req.isAdminRequest ? req.params.userId : req.userId;
+    
+    const deletedUser = await User.findByIdAndDelete(userIdToDelete);
     
     if (!deletedUser) {
+      console.log("User not found for deletion");
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Delete all user's figures
-    await Figure.deleteMany({ userId: req.userId });
+    await Figure.deleteMany({ userId: userIdToDelete });
     
-    // Delete all user's orders
-    await Order.deleteMany({ userId: req.userId });
+    await Order.deleteMany({ userId: userIdToDelete });
     
-    // Clear authentication token
-    res.clearCookie("token");
+    if (!req.isAdminRequest) {
+      res.clearCookie("token");
+    }
 
-    res.status(200).json({ message: "Profile deleted successfully" });
+    res.status(200).json({ 
+      message: "Profile deleted successfully",
+      deletedUser: {
+        id: deletedUser._id,
+        email: deletedUser.email,
+        name: deletedUser.name
+      }
+    });
 
   } catch (err) {
     console.log("Error in deleteProfile:", err);
