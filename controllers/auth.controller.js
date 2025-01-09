@@ -1,13 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config();
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 export const createAccount = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   try {
     const existingUser = await User.findOne({ email });
 
@@ -18,6 +18,7 @@ export const createAccount = async (req, res) => {
       name,
       email,
       password,
+      ...(req.isAdminRequest && role && { role })
     });
     await newUser.save();
 
@@ -65,4 +66,42 @@ export const signIn = async (req, res) => {
 };
 export const logout = async (req, res) => {
   res.clearCookie("token").status(200).json({ message: "Logout successfully" });
+};
+
+export const createInitialAdmin = async (req, res) => {
+  try {
+    const existingAdmin = await User.findOne({ role: "admin" });
+
+    if (existingAdmin) {
+      console.log("Admin already exists");
+      return res.status(400).json({
+        message: "Admin user already exists",
+      });
+    }
+
+    const { name, email, password, secretKey } = req.body;
+
+    const adminUser = new User({
+      name,
+      email,
+      password,
+      role: "admin",
+    });
+
+    await adminUser.save();
+
+    res.status(201).json({
+      message: "Admin user created successfully",
+      user: {
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+      },
+    });
+  } catch (err) {
+    console.log("Error in createInitialAdmin:", err);
+    res.status(500).json({
+      message: "Failed to create admin user",
+    });
+  }
 };
