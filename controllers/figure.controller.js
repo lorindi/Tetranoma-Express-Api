@@ -1,10 +1,23 @@
 import Figure from "../models/Figure.js";
+import User from "../models/User.js";
+
 
 export const createFigure = async (req, res) => {
-  const user = req.userId;
-  const { title, description, category, images, price, stock } = req.body;
   
   try {
+    let targetUserId;
+    if (req.isAdminRequest && req.body.targetUserId) {
+      targetUserId = req.body.targetUserId;
+      
+      const targetUser = await User.findById(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "Target user not found" });
+      }
+    } else {
+      targetUserId = req.userId;
+    }
+
+    const { title, description, category, images, price, stock } = req.body;
     
     const figure = new Figure({
       title,
@@ -13,7 +26,7 @@ export const createFigure = async (req, res) => {
       images,
       price,
       stock,
-      userId: user,
+      userId: targetUserId, 
       rating: {
         averageRating: 0,
         userRatings: new Map()
@@ -36,17 +49,26 @@ export const createFigure = async (req, res) => {
 export const updateFigure = async (req, res) => {
   const figureId = req.params.id;
   const userId = req.userId;
-  const { title, description, category, images, price, stock } = req.body;
+  const { title, description, category, images, price, stock, targetUserId } = req.body;
 
   try {
-    
     const figure = await Figure.findById(figureId);
+    console.log("Found figure:", figure);
     
-    if (!figure) return res.status(404).json({ message: "Figure not found" });
+    if (!figure) {
+      return res.status(404).json({ message: "Figure not found" });
+    }
     
+    if (!req.isAdminRequest && figure.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to update this figure" });
+    }
 
-    // Check if user is the owner
-    if (figure.userId.toString() !== userId) return res.status(403).json({ message: "Not authorized to update this figure" });
+    if (req.isAdminRequest && targetUserId) {
+      const targetUser = await User.findById(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "Target user not found" });
+      }
+    }
 
     const updatedFigure = await Figure.findByIdAndUpdate(
       figureId,
@@ -57,7 +79,8 @@ export const updateFigure = async (req, res) => {
           ...(category && { category }),
           ...(images && { images }),
           ...(price && { price }),
-          ...(typeof stock !== "undefined" && { stock })
+          ...(typeof stock !== "undefined" && { stock }),
+          ...(req.isAdminRequest && targetUserId && { userId: targetUserId })
         }
       },
       { new: true }
@@ -182,27 +205,29 @@ export const deleteFigure = async (req, res) => {
 
   try {
     const figure = await Figure.findById(figureId);
-    
+
     if (!figure) {
       return res.status(404).json({ message: "Figure not found" });
     }
 
-    if (figure.userId.toString() !== userId) {
+    // Allow admin to delete any figure, regular users can only delete their own
+    if (!req.isAdminRequest && figure.userId.toString() !== userId) {
       return res.status(403).json({ message: "Not authorized to delete this figure" });
+    }
+
+    // If admin request with targetUserId, verify the figure belongs to target user
+    if (req.isAdminRequest && req.body.targetUserId) {
+      if (figure.userId.toString() !== req.body.targetUserId) {
+        return res.status(403).json({ message: "Figure does not belong to target user" });
+      }
     }
 
     await Figure.findByIdAndDelete(figureId);
 
-    res.status(200).json({ 
-      message: "Figure successfully deleted"
-    });
-
+    res.status(200).json({ message: "Figure deleted successfully" });
   } catch (err) {
     console.log("Error in deleteFigure:", err);
-    res.status(500).json({ 
-      message: "Failed to delete figure",
-      error: err.message 
-    });
+    res.status(500).json({ message: "Failed to delete figure" });
   }
 };
 
