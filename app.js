@@ -13,12 +13,18 @@ dotenv.config();
 const app = express();
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/figures-db";
-console.log(process.env.MONGODB_URI);
-console.log("hello");
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => console.log("DB connected successfully"))
-  .catch((err) => console.log("DB connection error:", err));
+
+
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 5000,
+})
+.then(() => {
+  console.log("DB connected successfully");
+})
+.catch((err) => {
+  console.log("DB connection error:", err);
+});
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
