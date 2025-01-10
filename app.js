@@ -18,10 +18,30 @@ mongoose
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ 
+  origin: [
+    "http://localhost:5173",
+    "https://tetranoma.vercel.app/"
+  ],
+  credentials: true 
+}));
 
 app.get("/", (req, res) => {
   console.log("Restful service");
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(500).json({ 
+    message: "An error occurred",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Endpoint not found" });
 });
 
 app.use("/api/auth", authRoute);
