@@ -11,7 +11,7 @@ import adminRoute from "./routes/admin.route.js";
 const app = express();
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/figures-db")
+  .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/figures-db")
   .then(() => console.log("DB connected"))
   .catch((err) => console.log(err));
 
@@ -29,19 +29,18 @@ app.use(cors({
 app.get("/", (req, res) => {
   console.log("Restful service");
 });
-
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({ 
-    message: "An error occurred",
+    message: "Server error",
     error: process.env.NODE_ENV === "development" ? err.message : undefined
   });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: "Endpoint not found" });
+  res.status(404).json({ message: "Route not found" });
 });
 
 app.use("/api/auth", authRoute);
