@@ -34,23 +34,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://tetranoma.vercel.app"
-];
+const corsOptions = {
+  origin: ["http://localhost:5173", "https://tetranoma.vercel.app"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["set-cookie"]
+};
 
-app.use(cors({ 
-  origin: function(origin, callback) {
-    console.log("Request origin:", origin);
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true 
-}));
-
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   console.log("Restful service is running");
