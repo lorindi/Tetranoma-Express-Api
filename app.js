@@ -33,7 +33,23 @@ await connectDB();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tetranoma-express-api.vercel.app"
+];
+
+app.use(cors({ 
+  origin: function(origin, callback) {
+    console.log("Request origin:", origin);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true 
+}));
 
 app.get("/", (req, res) => {
   console.log("Restful service is running");
