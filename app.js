@@ -25,9 +25,14 @@ app.use(cors({
   ],
   credentials: true 
 }));
-
+// Root route handler
 app.get("/", (req, res) => {
-  console.log("Restful service");
+  console.log("Root route accessed");
+  res.status(200).json({ 
+    status: "success",
+    message: "Tetranoma API is running",
+    version: "1.0.0"
+  });
 });
 
 app.use("/api/auth", authRoute);
@@ -35,7 +40,14 @@ app.use("/api/profile", profileRoute);
 app.use("/api/figures", figureRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/admin", adminRoute);
-
+// 404 handler - add this after all other routes
+app.use("*", (req, res) => {
+  console.log("404 - Route not found:", req.originalUrl);
+  res.status(404).json({ 
+    status: "error",
+    message: "Route not found" 
+  });
+});
 app.listen(5000, () => {
   console.log("Restful server is listening on port 5000");
 });
