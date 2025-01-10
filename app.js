@@ -13,6 +13,7 @@ dotenv.config();
 const app = express();
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/figures-db";
+console.log(MONGODB_URI);
 
 mongoose
   .connect(MONGODB_URI)
