@@ -38,3 +38,4 @@ coverage/
 # Build files
 dist/
 build/
+.vercel
