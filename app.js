@@ -14,10 +14,21 @@ const app = express();
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/figures-db";
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => console.log("DB connected successfully"))
-  .catch((err) => console.log("DB connection error:", err));
+const connectDB = async () => {
+  try {
+    console.log("Connecting to MongoDB...");
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log("DB connected successfully");
+  } catch (err) {
+    console.log("DB connection error:", err);
+    process.exit(1);
+  }
+};
+
+await connectDB();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
