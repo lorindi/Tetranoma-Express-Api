@@ -18,7 +18,7 @@ export const createAccount = async (req, res) => {
       name,
       email,
       password,
-      ...(req.isAdminRequest && role && { role })
+      ...(req.isAdminRequest && role && { role }),
     });
     await newUser.save();
 
@@ -58,10 +58,18 @@ export const signIn = async (req, res) => {
         maxAge: age,
         sameSite: "none",
         secure: true,
-        domain: ".vercel.app"
+        domain: ".vercel.app",
       })
       .status(200)
       .json({ message: "User sign in successfully", user: userInfo });
+
+    console.log("Cookie settings:", {
+      httpOnly: true,
+      maxAge: age,
+      sameSite: "none",
+      secure: true,
+      domain: ".vercel.app",
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to sign in account" });
