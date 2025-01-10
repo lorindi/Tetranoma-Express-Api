@@ -54,7 +54,7 @@ export const signIn = async (req, res) => {
 
     res
       .cookie("token", token, {
-        httpOnly: true,
+        httpOnly: false,
         maxAge: age,
         sameSite: "none",
         secure: true,
@@ -63,13 +63,6 @@ export const signIn = async (req, res) => {
       .status(200)
       .json({ message: "User sign in successfully", user: userInfo });
 
-    console.log("Cookie settings:", {
-      httpOnly: true,
-      maxAge: age,
-      sameSite: "none",
-      secure: true,
-      domain: ".vercel.app",
-    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to sign in account" });
