@@ -34,16 +34,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-const corsOptions = {
-  origin: ["http://localhost:5173", "https://tetranoma.vercel.app"],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Set-Cookie"],
-  preflightContinue: true,
-};
+// const corsOptions = {
+//   origin: ["http://localhost:5173", "https://tetranoma.vercel.app"],
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   exposedHeaders: ["Set-Cookie"],
+//   preflightContinue: true,
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+app.use(cors({ origin: "https://tetranoma.vercel.app", credentials: true }));
 
 app.get("/", (req, res) => {
   console.log("Restful service is running");
