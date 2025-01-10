@@ -14,7 +14,7 @@ const app = express();
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/figures-db";
 console.log(process.env.MONGODB_URI);
-
+console.log("hello");
 mongoose
   .connect(MONGODB_URI)
   .then(() => console.log("DB connected successfully"))
