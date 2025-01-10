@@ -20,13 +20,39 @@ mongoose
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ 
-  origin: [
-    "http://localhost:5173",
-    "https://tetranoma.vercel.app"
-  ],
-  credentials: true 
+// app.use(cors({ 
+//   origin: [
+//     "http://localhost:5173",
+//     "https://tetranoma.vercel.app"
+//   ],
+//   credentials: true 
+// }));
+
+// Add more detailed CORS configuration
+app.use(cors({
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://tetranoma.vercel.app"
+    ];
+    
+    console.log("Request origin:", origin);
+    
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+  maxAge: 600
 }));
+
+// Add OPTIONS handling for preflight requests
+app.options("*", cors());
 
 app.get("/", (req, res) => {
   console.log("Health check endpoint hit");
