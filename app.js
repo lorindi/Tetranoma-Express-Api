@@ -19,32 +19,40 @@ mongoose
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-// Add detailed CORS configuration
-const corsOptions = {
-  origin: function(origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://tetranoma.vercel.app"
-    ];
-    
-    console.log("Request origin:", origin);
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+app.use(cors({ 
+  origin: [
+    "http://localhost:5173",
+    "https://tetranoma.vercel.app",
+    "https://tetranoma-express-api.vercel.app"
+  ],
   credentials: true,
-  maxAge: 86400
-};
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  exposedHeaders: ["set-cookie"]
+}));
 
-app.use(cors(corsOptions));
+// Add preflight OPTIONS handling
+app.options("*", cors());
 
-// Handle preflight requests
-app.options("*", cors(corsOptions));
+// Add security headers
+app.use((req, res, next) => {
+  console.log("Setting security headers");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  next();
+});
+app.use((err, req, res, next) => {
+  console.log("Error middleware triggered:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error",
+    error: process.env.NODE_ENV === "development" ? err : {}
+  });
+});
 
 app.get("/", (req, res) => {
   console.log("Health check endpoint hit");
