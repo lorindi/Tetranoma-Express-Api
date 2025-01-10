@@ -54,7 +54,7 @@ export const signIn = async (req, res) => {
 
     res
       .cookie("token", token, {
-        httpOnly: false,
+        httpOnly: true,
         maxAge: age,
         sameSite: "none",
         secure: true,
@@ -62,7 +62,6 @@ export const signIn = async (req, res) => {
       })
       .status(200)
       .json({ message: "User sign in successfully", user: userInfo });
-
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to sign in account" });
