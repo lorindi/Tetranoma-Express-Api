@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "vercel-build": "echo hello"
+    "vercel-build": "echo 'Build completed'"
   },
   "keywords": [],
   "author": "",
