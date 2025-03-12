@@ -18,10 +18,14 @@ const paymentSchema = mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["credit card", "paypal", "bank transfer"],
+      enum: ["credit card", "paypal", "bank transfer", "stripe"],
     },
     currency: { type: String, default: "BGN" },
     transactionId: { type: String },
+    // New fields for Stripe
+    stripePaymentIntentId: { type: String },
+    stripeCustomerId: { type: String },
+    stripeChargeId: { type: String },
   },
   { timestamps: true }
 );
