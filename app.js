@@ -8,6 +8,7 @@ import cartRoute from "./routes/cart.route.js";
 import profileRoute from "./routes/profile.route.js";
 import adminRoute from "./routes/admin.route.js";
 import dotenv from "dotenv";
+import stripeRoute from "./routes/stripe.route.js";
 dotenv.config();
 
 const app = express();
@@ -38,11 +39,19 @@ app.use(cookieParser());
 //   origin: ["http://localhost:5173", "https://tetranoma.vercel.app"],
 app.use(cors({ origin: "https://tetranoma.vercel.app", credentials: true }));
 
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), (req, res) => {
+  req.rawBody = req.body;
+  next();
+});
+
+
 app.get("/", (req, res) => {
   console.log("Restful service is running");
   res.status(200).json({ message: "Tetranoma API is running" });
 });
 
+
+app.use("/api/stripe", stripeRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/figures", figureRoute);
